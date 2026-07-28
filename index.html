@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>株式会社ベジワーク | 市場のやり方は、変えない。仕組みだけ、変える。</title>
+<meta name="description" content="青果卸売市場向け営業管理SaaS「vegework」。荷受も分荷も市場ごとに違う。だから貴社のルールに合わせて作るカスタマイズSaaSです。初期費用無料。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@600;700;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="assets/img/icon.png">
+<style>
+:root {
+  --green: #1a5c3a;
+  --green-dark: #12402a;
+  --green-pale: #eaf2ec;
+  --ink: #1f2a24;
+  --ink-soft: #55635b;
+  --bg: #fdfdfb;
+  --bg-alt: #f5f7f4;
+  --line: #dde4de;
+  --accent: #c8842c;
+  --serif: "Noto Serif JP", serif;
+  --sans: "Noto Sans JP", sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); color: var(--ink); background: var(--bg); line-height: 1.8; word-break: auto-phrase; }
+.nw { white-space: nowrap; }
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+section { padding: 96px 0; }
+.sec-label { font-size: 13px; letter-spacing: .25em; color: var(--green); font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
+.sec-title { font-family: var(--serif); font-size: clamp(26px, 4vw, 38px); font-weight: 700; line-height: 1.5; margin-bottom: 24px; }
+.sec-lead { color: var(--ink-soft); max-width: 720px; margin-bottom: 48px; }
+
+/* reveal animation (only when JS is active — content stays visible without it) */
+html.js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
+html.js .reveal.on { opacity: 1; transform: none; }
+
+/* header */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(253,253,251,.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo img { height: 34px; width: auto; }
+.logo small { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--ink-soft); letter-spacing: .06em; }
+@media (max-width: 640px) { .logo small { display: none; } }
+.nav-links { display: flex; gap: 28px; align-items: center; font-size: 14px; font-weight: 500; }
+.nav-links a:hover { color: var(--green); }
+.btn {
+  display: inline-block; background: var(--green); color: #fff; font-weight: 700;
+  padding: 12px 28px; border-radius: 6px; transition: background .2s;
+  border: none; cursor: pointer; font-size: 15px; font-family: var(--sans);
+}
+.btn:hover { background: var(--green-dark); }
+.btn.ghost { background: transparent; color: var(--green); border: 1.5px solid var(--green); }
+.btn.ghost:hover { background: var(--green-pale); }
+.btn.big { padding: 16px 44px; font-size: 16px; }
+@media (max-width: 800px) { .nav-links a:not(.btn) { display: none; } }
+.login-btn { padding: 11px 20px; }
+
+/* リニューアル告知ポップアップ */
+.renewal-pop {
+  position: fixed; right: 24px; bottom: 24px; z-index: 200;
+  width: min(360px, calc(100vw - 48px));
+  background: #fff; border-radius: 12px; padding: 24px 26px;
+  box-shadow: 0 12px 48px rgba(18,64,42,.28);
+  border-top: 4px solid var(--green);
+  opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease;
+  pointer-events: none;
+}
+.renewal-pop.show { opacity: 1; transform: none; pointer-events: auto; }
+.pop-close { position: absolute; top: 10px; right: 14px; border: none; background: none; font-size: 20px; color: var(--ink-soft); cursor: pointer; }
+.pop-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .1em; padding: 3px 12px; border-radius: 4px; }
+.pop-date { font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
+.pop-title { font-weight: 700; font-size: 16px; margin: 4px 0 8px; }
+.pop-body { font-size: 13px; color: var(--ink-soft); }
+.pop-body strong { color: var(--green-dark); }
+
+/* hero — 全画面背景スライドショー+前面コピー */
+.hero {
+  position: relative; overflow: hidden;
+  min-height: calc(100svh - 68px); display: flex; align-items: center;
+  padding: 100px 0;
+}
+.hero-bg { position: absolute; inset: 0; }
+.hero-bg img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity 1.8s ease; transform: scale(1.04);
+}
+.hero-bg img.active { opacity: 1; }
+.hero-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, rgba(8,28,18,.86) 15%, rgba(8,28,18,.6) 55%, rgba(8,28,18,.4) 100%);
+}
+.hero .wrap { position: relative; z-index: 1; }
+.hero-tag { display: inline-block; background: var(--green); color: #fff; font-size: 13px; font-weight: 700; letter-spacing: .12em; padding: 6px 16px; border-radius: 999px; margin-bottom: 28px; }
+.hero h1 { font-family: var(--serif); font-size: clamp(34px, 5.8vw, 60px); font-weight: 900; line-height: 1.45; letter-spacing: .02em; color: #fff; text-shadow: 0 2px 24px rgba(0,0,0,.35); }
+.hero h1 .em { color: #8fd6a8; }
+.hero-sub { margin: 26px 0 36px; color: #e2ece5; font-size: 16px; max-width: 620px; text-shadow: 0 1px 12px rgba(0,0,0,.4); }
+.hero-sub strong { color: #fff; }
+.hero-ctas { display: flex; gap: 16px; flex-wrap: wrap; }
+.hero .btn.ghost { color: #fff; border-color: rgba(255,255,255,.85); }
+.hero .btn.ghost:hover { background: rgba(255,255,255,.15); }
+.hero-proof { margin-top: 44px; font-size: 13px; color: #b9cfc1; }
+.hero-proof strong { color: #fff; font-weight: 700; }
+
+/* stats strip */
+.stats { background: var(--green-dark); color: #fff; padding: 40px 0; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; text-align: center; }
+@media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+.stat-num { font-family: var(--serif); font-size: 42px; font-weight: 900; line-height: 1.2; }
+.stat-num small { font-size: 18px; }
+.stat-label { font-size: 13px; opacity: .8; letter-spacing: .08em; }
+
+/* problem cards */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+@media (max-width: 800px) { .cards { grid-template-columns: 1fr; } }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 32px 28px; }
+.card .num { font-family: var(--serif); font-size: 30px; color: var(--line); font-weight: 900; margin-bottom: 8px; }
+.card h3 { font-size: 17px; margin-bottom: 12px; line-height: 1.6; }
+.card p { font-size: 14px; color: var(--ink-soft); }
+.card .arrow { margin: 16px 0 8px; color: var(--green); font-weight: 900; }
+.card .answer { font-size: 14px; font-weight: 700; color: var(--green-dark); background: var(--green-pale); border-radius: 6px; padding: 12px 14px; }
+
+/* custom section (diagram) */
+.custom { background: var(--bg-alt); }
+.flow-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 40px 0; }
+@media (max-width: 800px) { .flow-compare { grid-template-columns: 1fr; } }
+.flow-box { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 28px; }
+.flow-box h4 { font-size: 16px; color: var(--green-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.flow-box h4 .pill { font-size: 11px; background: var(--green); color: #fff; border-radius: 999px; padding: 2px 10px; letter-spacing: .08em; }
+.flow-steps { display: flex; flex-direction: column; gap: 0; font-size: 14px; }
+.flow-step { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.flow-step .dot { width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--green-pale); color: var(--green-dark); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.flow-step.hl .dot { background: var(--green); color: #fff; }
+.flow-step.hl { font-weight: 700; }
+.flow-note { text-align: center; margin-top: 8px; }
+.flow-note .tags { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
+.flow-note .tag { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 8px 20px; font-size: 14px; font-weight: 500; }
+.custom-msg { text-align: center; font-family: var(--serif); font-size: clamp(20px, 3vw, 28px); font-weight: 700; margin-top: 40px; line-height: 1.7; }
+.custom-msg .em { color: var(--green); }
+.ai-box { max-width: 720px; margin: 40px auto 0; background: #fff; border: 1.5px solid var(--green); border-radius: 12px; padding: 28px 32px; }
+.ai-box-title { font-weight: 700; color: var(--green-dark); margin-bottom: 10px; font-size: 16px; }
+.ai-box p { font-size: 14px; color: var(--ink-soft); }
+.ai-box p strong { color: var(--green-dark); }
+
+/* product */
+.product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+@media (max-width: 800px) { .product-grid { grid-template-columns: 1fr; } }
+.shot {
+  width: 100%; aspect-ratio: 16/10; object-fit: cover; background: #e8ece9;
+  border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(18,64,42,.08); display: block;
+}
+.shot-note { font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
+.check-list { list-style: none; margin-top: 8px; }
+.check-list li { padding-left: 32px; position: relative; margin-bottom: 14px; font-size: 15px; }
+.check-list li::before {
+  content: "✓"; position: absolute; left: 0; top: 0;
+  width: 22px; height: 22px; background: var(--green); color: #fff; border-radius: 50%;
+  font-size: 13px; display: flex; align-items: center; justify-content: center; font-weight: 900;
+}
+
+/* steps */
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: step; }
+@media (max-width: 800px) { .steps { grid-template-columns: 1fr 1fr; } }
+.step { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 24px 20px; position: relative; }
+.step::before { counter-increment: step; content: "0" counter(step); font-family: var(--serif); font-weight: 900; color: var(--green); font-size: 22px; display: block; margin-bottom: 8px; }
+.step h4 { font-size: 15px; margin-bottom: 8px; }
+.step p { font-size: 13px; color: var(--ink-soft); }
+
+/* pricing */
+.pricing { background: var(--green-dark); color: #fff; }
+.pricing .sec-label { color: #9fc7ab; }
+.price-box { background: #fff; color: var(--ink); border-radius: 12px; padding: 48px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+@media (max-width: 800px) { .price-box { grid-template-columns: 1fr; } }
+.price-main { text-align: center; }
+.price-main .label { font-weight: 700; color: var(--green-dark); font-size: 15px; }
+.price-main .zero { font-family: var(--serif); font-size: 88px; font-weight: 900; color: var(--green); line-height: 1.1; }
+.price-main .zero small { font-size: 28px; }
+.price-main .note { font-size: 12px; color: var(--ink-soft); }
+.price-sub p { font-size: 14px; color: var(--ink-soft); margin-bottom: 12px; }
+.price-sub .cond { font-size: 12px; color: var(--ink-soft); background: var(--bg-alt); border-radius: 8px; padding: 14px 16px; }
+
+/* results */
+.result-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 800px) { .result-cards { grid-template-columns: 1fr; } }
+.result-card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 36px 32px; }
+.result-card .place { font-size: 12px; color: var(--ink-soft); letter-spacing: .08em; margin-bottom: 6px; }
+.result-card h3 { font-family: var(--serif); font-size: 20px; margin-bottom: 14px; }
+.result-card .badge { display: inline-block; font-size: 12px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 3px 14px; }
+
+/* news */
+.news-list { border-top: 1px solid var(--line); }
+.news-item { display: grid; grid-template-columns: 110px 1fr; gap: 24px; padding: 20px 4px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.news-item time { color: var(--ink-soft); font-weight: 500; }
+@media (max-width: 640px) { .news-item { grid-template-columns: 1fr; gap: 4px; } }
+.news-list.collapsed .news-item:nth-child(n+6) { display: none; }
+.news-more { text-align: center; margin-top: 28px; }
+
+/* company */
+.company { background: var(--bg-alt); }
+.company-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.company-table th, .company-table td { text-align: left; padding: 16px 20px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.company-table th { width: 160px; background: var(--green-pale); color: var(--green-dark); font-weight: 700; }
+.exec { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+@media (max-width: 800px) { .exec { grid-template-columns: 1fr; } }
+.exec-card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 28px; font-size: 14px; }
+.exec-card h4 { font-size: 16px; margin-bottom: 4px; }
+.exec-card .role { font-size: 12px; color: var(--green); font-weight: 700; margin-bottom: 12px; }
+.exec-card p { color: var(--ink-soft); font-size: 13px; }
+
+/* contact */
+.contact-lead { text-align: center; max-width: 640px; margin: 0 auto 48px; }
+.form { max-width: 640px; margin: 0 auto; display: grid; gap: 20px; }
+.form label { font-size: 14px; font-weight: 700; display: block; margin-bottom: 6px; }
+.form label .req { color: #c0392b; font-size: 11px; margin-left: 6px; }
+.form input, .form select, .form textarea {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px;
+  font-family: var(--sans); font-size: 15px; background: #fff;
+}
+.form input:focus, .form select:focus, .form textarea:focus { outline: 2px solid var(--green); border-color: var(--green); }
+.form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .form .row2 { grid-template-columns: 1fr; } }
+.form .privacy { font-size: 12px; color: var(--ink-soft); text-align: center; }
+.form .privacy a { text-decoration: underline; }
+.form .hp { position: absolute; left: -9999px; top: -9999px; }
+.form .optin { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.form .optin input { width: auto; }
+.form-error { color: #c0392b; font-size: 13px; text-align: center; font-weight: 700; }
+.form-thanks { max-width: 640px; margin: 0 auto; background: #fff; border: 1.5px solid var(--green); border-radius: 12px; padding: 40px 32px; text-align: center; }
+.form-thanks .thanks-title { font-size: 20px; font-weight: 700; color: var(--green-dark); margin-bottom: 12px; }
+button:disabled { opacity: .6; cursor: not-allowed; }
+.auto-note { max-width: 640px; margin: 24px auto 0; background: var(--green-pale); border-radius: 8px; padding: 16px 20px; font-size: 13px; color: var(--green-dark); }
+
+/* footer */
+footer { background: var(--green-dark); color: #cfe0d5; padding: 48px 0 32px; font-size: 13px; }
+.foot-grid { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
+.foot-logo { font-family: var(--serif); font-weight: 900; font-size: 20px; color: #fff; display: flex; align-items: center; gap: 10px; }
+.foot-logo img { height: 26px; width: auto; }
+.foot-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.foot-links a:hover { color: #fff; }
+.ai-credit { text-align: center; font-size: 12px; opacity: .8; margin-bottom: 20px; line-height: 1.9; }
+.copy { text-align: center; opacity: .6; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#top"><img src="assets/img/logo.svg" alt="vegework"><small>株式会社ベジワーク</small></a>
+    <nav class="nav-links">
+      <a href="#problem">課題と解決</a>
+      <a href="#custom">カスタマイズSaaS</a>
+      <a href="#price">料金</a>
+      <a href="#results">導入実績</a>
+      <a href="#company">会社情報</a>
+      <a href="#contact" class="btn">お問い合わせ</a>
+      <a href="https://vegework.com/" target="_blank" rel="noopener" class="btn ghost login-btn">ログイン</a>
+    </nav>
+  </div>
+</header>
+
+<div class="renewal-pop" id="renewal-pop">
+  <button class="pop-close" id="pop-close" aria-label="閉じる">×</button>
+  <span class="pop-badge">NEW</span>
+  <p class="pop-date">2026.08</p>
+  <p class="pop-title">公式サイトをリニューアルしました</p>
+  <p class="pop-body">このサイトは、デザイン・画像生成・コーディングまで、すべて<strong>AIを活用して自社で制作</strong>しました。vegework の開発にも、AIエージェントをフル活用しています。</p>
+</div>
+
+<section class="hero" id="top">
+  <div class="hero-bg">
+    <img src="assets/img/hero1.jpg" alt="" class="active">
+    <img src="assets/img/hero2.jpg" alt="">
+    <img src="assets/img/hero3.jpg" alt="">
+  </div>
+  <div class="wrap">
+    <span class="hero-tag">青果卸売市場向け 営業管理SaaS</span>
+    <h1>市場のやり方は、<br>変えない。<br><span class="em">仕組みだけ、変える。</span></h1>
+    <p class="hero-sub">荷受のタイミングも、分荷指示の方法も、青果市場ごとに違う——。<br>vegework は青果市場の営業・運用ルールに合わせて作る<strong>カスタマイズSaaS</strong>。既存のやり方を壊さずに、営業利益の最大化を実現します。</p>
+    <div class="hero-ctas">
+      <a class="btn big" href="#contact">資料請求・お問い合わせ</a>
+      <a class="btn ghost big" href="#custom">vegeworkの特長を見る</a>
+    </div>
+    <p class="hero-proof">導入実績: <strong>株式会社R&Cながの青果</strong> / <strong>ぐんま県央青果株式会社</strong></p>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="wrap stats-grid">
+    <div>
+      <div class="stat-num" data-count="0"><small>初期費用</small> 0<small>円〜</small></div>
+      <div class="stat-label">SaaSだから初期投資を抑えられる ※条件あり</div>
+    </div>
+    <div>
+      <div class="stat-num">2<small>社</small></div>
+      <div class="stat-label">導入実績(2026年7月現在)</div>
+    </div>
+    <div>
+      <div class="stat-num">100<small>%</small></div>
+      <div class="stat-label">貴社ルールに合わせた個別カスタマイズ</div>
+    </div>
+  </div>
+</div>
+
+<section id="problem" style="background: linear-gradient(rgba(253,253,251,.93), rgba(253,253,251,.97)), url('assets/img/paper-bg.jpg') center/cover;">
+  <div class="wrap">
+    <p class="sec-label reveal">Problem &amp; Solution</p>
+    <h2 class="sec-title reveal">営業利益率の低さの原因は、<br>営業担当者の「ルーティン」にあります。</h2>
+    <p class="sec-lead reveal">紙の伝票と勘に頼った値付けのままでは、取引ごとの利益は見えません。vegework は利益の<span class="nw">見える化</span>と値付けのルーティン改革で、利益を守る仕組みを作ります。</p>
+    <div class="cards">
+      <div class="card reveal">
+        <div class="num">01</div>
+        <h3>手数料・経費まで含めた「本当の利益」が見えていない</h3>
+        <p>荷口へかかる委託手数料や経費、買人毎へかかる販売手数料や運賃まで含めると、取引の実際の利益は簡単には見えない。</p>
+        <div class="arrow">↓ vegeworkなら</div>
+        <div class="answer">手数料・経費・運賃を自動計算し、荷口だけでなく買人ごとの利益をチェック。</div>
+      </div>
+      <div class="card reveal">
+        <div class="num">02</div>
+        <h3>振り返りが「販売後」になっている</h3>
+        <p>一つ一つの取引の売上・利益の振り返りが販売後(事後)になり、値付けの失敗に気づいた時には手遅れに。</p>
+        <div class="arrow">↓ vegeworkなら</div>
+        <div class="answer">価格確定前に上長が取引をチェック・指導する「事前振り返り」へ</div>
+      </div>
+      <div class="card reveal">
+        <div class="num">03</div>
+        <h3>値付けの責任が営業担当者ひとりに</h3>
+        <p>営業担当者だけが取引価格の責任を持ち、その値付けが適切かどうかの他者判断がされていない。</p>
+        <div class="arrow">↓ vegeworkなら</div>
+        <div class="answer">上長がWeb上で即座に承認。取引の責任を組織で持つ体制へ</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="custom" id="custom">
+  <div class="wrap">
+    <p class="sec-label reveal">Why Customize</p>
+    <h2 class="sec-title reveal">汎用システムが市場に定着しない理由を、<br>私たちは知っています。</h2>
+    <p class="sec-lead reveal">青果市場の業務フローは、全国一律ではありません。産地県と消費県では荷受と分荷の順序すら<span class="nw">異なり、</span>分荷指示の方法も市場ごとにバラバラです。だから「システムに業務を合わせてください」では、現場は動きません。</p>
+    <div class="flow-compare">
+      <div class="flow-box reveal">
+        <h4><span class="pill">産地県の市場</span>例: 青果の産地の都道府県</h4>
+        <div class="flow-steps">
+          <div class="flow-step hl"><span class="dot">1</span>青果が入荷・荷受</div>
+          <div class="flow-step"><span class="dot">2</span>分荷指示</div>
+          <div class="flow-step"><span class="dot">3</span>販売・配送</div>
+        </div>
+      </div>
+      <div class="flow-box reveal">
+        <h4><span class="pill">消費県の市場</span>例: 東京などの大都市</h4>
+        <div class="flow-steps">
+          <div class="flow-step"><span class="dot">1</span>分荷指示</div>
+          <div class="flow-step hl"><span class="dot">2</span>青果が入荷</div>
+          <div class="flow-step"><span class="dot">3</span>販売・配送</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-note reveal">
+      <p>さらに、分荷指示の方法も市場によって様々。</p>
+      <div class="tags">
+        <span class="tag">📄 紙の伝票</span>
+        <span class="tag">📊 Excel</span>
+        <span class="tag">🖥 既存システム</span>
+      </div>
+    </div>
+    <p class="custom-msg reveal">だから vegework は、<br>貴社のルールに合わせて<span class="em">カスタマイズして提供</span>します。</p>
+    <div class="ai-box reveal">
+      <p class="ai-box-title">🤖 個別カスタマイズを、現実的なコストで提供できる理由</p>
+      <p>vegework は、開発に<strong>AIエージェントをフル活用</strong>しています。従来なら市場ごとの個別開発に膨大な工数がかかっていましたが、AIとともに開発することで、貴社仕様のカスタマイズを<strong>短期間・低コスト</strong>で実現します。</p>
+    </div>
+  </div>
+</section>
+
+<section id="product">
+  <div class="wrap">
+    <p class="sec-label reveal">Product</p>
+    <h2 class="sec-title reveal">現場が毎日使える、シンプルな画面。</h2>
+    <div class="product-grid">
+      <div class="reveal">
+        <video class="shot" src="assets/img/demo.mp4" poster="assets/img/demo-poster.jpg" autoplay muted loop playsinline></video>
+        <p class="shot-note">実際の操作画面: 品目の追加 → 入荷登録 → 買人ごとの分荷 → 分荷票の出力(取引先名は加工しています)</p>
+      </div>
+      <div class="reveal">
+        <ul class="check-list">
+          <li><strong>価格確定前の上長承認</strong> — 取引をWeb上で即座にチェック・承認</li>
+          <li><strong>取引ごとの売上・利益の見える化</strong> — 事前振り返りで利益を守る</li>
+          <li><strong>日次・週次のセルフマネジメント</strong> — 担当者自身が自分の数字を確認</li>
+          <li><strong>貴社の分荷・荷受フローに適合</strong> — 紙・Excel運用からの段階的移行</li>
+          <li><strong>AIによる利益最大化サポート</strong> — 過去の分荷や売値を元にAIが後押し(AI機能は随時追加予定)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="custom" id="steps">
+  <div class="wrap">
+    <p class="sec-label reveal">Process</p>
+    <h2 class="sec-title reveal">導入の流れ</h2>
+    <p class="sec-lead reveal">まず貴社の現場を知ることから始めます。ヒアリングと視察を通じて業務ルールを理解した上で、<span class="nw">vegework を</span>貴社仕様にカスタマイズします。</p>
+    <div class="steps">
+      <div class="step reveal"><h4>ヒアリング</h4><p>オンラインで現状の営業フロー・課題を伺います。</p></div>
+      <div class="step reveal"><h4>現場視察</h4><p>実際に市場へ伺い、荷受・分荷の実務を確認します。</p></div>
+      <div class="step reveal"><h4>カスタマイズ</h4><p>AIエージェントを活用した開発で、貴社ルールに合わせて vegework を短期間で設定・開発します。</p></div>
+      <div class="step reveal"><h4>運用開始</h4><p>現場への定着まで伴走してサポートします。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="price">
+  <div class="wrap">
+    <p class="sec-label reveal">Pricing</p>
+    <h2 class="sec-title reveal" style="color:#fff">初期費用を抑えて、始められる。</h2>
+    <div class="price-box reveal">
+      <div class="price-main">
+        <p class="label">初期費用</p>
+        <p class="zero">0<small>円〜</small></p>
+        <p class="note">※視察等の実経費・契約期間について条件があります</p>
+      </div>
+      <div class="price-sub">
+        <p>vegework はSaaSだから、大規模なシステム開発投資は不要です。AIエージェントを活用した開発体制により、個別カスタマイズでも初期費用を抑えられます。月額利用料は市場の規模・カスタマイズ内容により異なるため、まずはお気軽にお問い合わせください。</p>
+        <div class="cond">・視察などの実経費は別途ご負担いただきます<br>・最低契約期間の条件があります<br>・詳細はお問い合わせ後にお送りする資料をご覧ください</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <p class="sec-label reveal">Cases</p>
+    <h2 class="sec-title reveal">導入実績</h2>
+    <div class="result-cards">
+      <div class="result-card reveal">
+        <h3>青果卸売会社 A社</h3>
+        <span class="badge">事例インタビュー準備中</span>
+      </div>
+      <div class="result-card reveal">
+        <h3>青果卸売会社 B社</h3>
+        <span class="badge">事例インタビュー準備中</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="company" id="news">
+  <div class="wrap">
+    <p class="sec-label reveal">News</p>
+    <h2 class="sec-title reveal">ニュース</h2>
+    <div class="news-list collapsed reveal" id="news-list">
+      <div class="news-item"><time>2026.08.01</time><p>オフィシャルサイトをリニューアルしました。このサイトは、デザイン・画像生成・コーディングまで、すべてAIを活用して自社で制作しました。</p></div>
+      <div class="news-item"><time>2025.08.01</time><p>株式会社R&Cながの青果の上田本社が営業管理SaaSサービス「vegework」を導入いたしました。</p></div>
+      <div class="news-item"><time>2024.06.11</time><p>「vegework」が採択したOCIを活用したフルマネージドクラウドサービス「デジテラス」に関するプレスリリースが配信されました。</p></div>
+      <div class="news-item"><time>2024.06.06</time><p>高崎市総合地方卸売市場のぐんま県央青果株式会社が営業管理SaaSサービス「vegework」を導入いたしました。</p></div>
+      <div class="news-item"><time>2024.05.28</time><p>弊社が所属する食品流通業者間データ連携協議会が、農水省の補助事業(令和6年度持続可能な食品等流通対策事業)に採択されました。</p></div>
+      <div class="news-item"><time>2024.03.11</time><p>青果卸売市場向け、営業管理SaaSサービス「vegework」をリリースしました。利用規約、プライバシーポリシーを制定しました。</p></div>
+      <div class="news-item"><time>2023.10.31</time><p>株式会社No. 1が株式会社ベジワークへ出資、青果市場の人手不足の解消とDX化を後押し。</p></div>
+      <div class="news-item"><time>2023.10.31</time><p>第1回新株予約権の発行を行い、3000万円の資金調達を行いました。</p></div>
+    </div>
+    <div class="news-more reveal">
+      <button class="btn ghost" id="news-toggle" type="button">過去のニュースをすべて見る</button>
+    </div>
+  </div>
+</section>
+
+<section id="company">
+  <div class="wrap">
+    <p class="sec-label reveal">Company</p>
+    <h2 class="sec-title reveal">会社情報</h2>
+    <table class="company-table reveal">
+      <tr><th>会社名</th><td>株式会社ベジワーク</td></tr>
+      <tr><th>設立</th><td>2023年5月1日</td></tr>
+      <tr><th>事業内容</th><td>農産物の流通を最適化する情報システムの企画、設計、開発、販売、保守</td></tr>
+      <tr><th>代表取締役</th><td>一ツ木 崇之</td></tr>
+      <tr><th>取締役</th><td>三根 一仁</td></tr>
+      <tr><th>従業員</th><td>3名＋常時約20体のAIエージェント</td></tr>
+      <tr><th>所在地</th><td>〒105-0013 東京都港区浜松町2丁目7-15 浜松町三電舎ビル 901号室</td></tr>
+    </table>
+    <div class="exec">
+      <div class="exec-card reveal">
+        <h4>一ツ木 崇之</h4>
+        <p class="role">代表取締役</p>
+        <p>1980年東京都生まれ。成蹊大学工学部卒業後、コンサルティング会社などを経て2010年に起業。ソーシャルチッピングサービス「Grow!」や定期販売プラットフォーム「BoxToYou」などを立ち上げ、2017年に株式会社basicへ事業売却。2023年5月、株式会社ベジワーク代表取締役就任。</p>
+      </div>
+      <div class="exec-card reveal">
+        <h4>三根 一仁</h4>
+        <p class="role">取締役</p>
+        <p>1977年生まれ。2002年東京大学法学部卒業後、ソニーにてビデオ事業の経営管理に従事。2006年に株式会社insproutを設立、2015年に農業IoTの株式会社SenSproutを設立。2023年5月、新設分割により株式会社ベジワーク取締役就任。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="custom" id="contact">
+  <div class="wrap">
+    <p class="sec-label reveal" style="text-align:center">Contact</p>
+    <h2 class="sec-title reveal" style="text-align:center">まずは、資料をご覧ください。</h2>
+    <p class="contact-lead reveal">しつこい営業電話は行いません。貴社の市場に vegework が合うかどうか、資料と30分のオンラインミーティングでご判断ください。</p>
+    <form class="form reveal" id="contact-form" novalidate>
+      <div class="row2">
+        <div><label>会社名<span class="req">必須</span></label><input type="text" name="company" required placeholder="株式会社〇〇青果"></div>
+        <div><label>部署・役職</label><input type="text" name="title" placeholder="代表取締役"></div>
+      </div>
+      <div class="row2">
+        <div><label>お名前<span class="req">必須</span></label><input type="text" name="name" required placeholder="市場 太郎"></div>
+        <div><label>メールアドレス<span class="req">必須</span></label><input type="email" name="email" required placeholder="taro@example.co.jp"></div>
+      </div>
+      <div><label>お電話番号</label><input type="tel" name="tel" placeholder="03-0000-0000"></div>
+      <div>
+        <label>お問い合わせ種別<span class="req">必須</span></label>
+        <select name="type" required>
+          <option value="">選択してください</option>
+          <option>資料がほしい</option>
+          <option>導入を検討している</option>
+          <option>サービスについて質問したい</option>
+          <option>メディア掲載に関するお問い合わせ</option>
+          <option>その他</option>
+        </select>
+      </div>
+      <div><label>お問い合わせ内容</label><textarea rows="4" name="message" placeholder="ご自由にお書きください"></textarea></div>
+      <div class="hp" aria-hidden="true"><label>ウェブサイト</label><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+      <label class="optin"><input type="checkbox" name="newsletter" value="1"> vegeworkに関するお知らせ・メールマガジンの配信を希望する</label>
+      <p class="privacy"><a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>をお読みの上、同意して送信してください。</p>
+      <button class="btn big" type="submit" id="form-submit" style="justify-self:center">資料を受け取る</button>
+      <p class="form-error" id="form-error" hidden>送信に失敗しました。時間をおいて再度お試しいただくか、admin@vegework.com までメールでご連絡ください。</p>
+    </form>
+    <div class="form-thanks" id="form-thanks" hidden>
+      <p class="thanks-title">✅ 送信が完了しました</p>
+      <p>お問い合わせありがとうございます。確認メールをお送りしましたので、ご確認ください。<br>担当者より2営業日以内にご連絡いたします。</p>
+    </div>
+    <div class="auto-note reveal">📩 送信後、確認メールをお届けします。サービス資料のご送付と、初回オンラインミーティングのご希望も同メールにて承ります。</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <p class="foot-logo"><img src="assets/img/icon.png" alt="">vegework</p>
+        <p>株式会社ベジワーク<br>〒105-0013 東京都港区浜松町2丁目7-15 浜松町三電舎ビル 901号室</p>
+      </div>
+      <nav class="foot-links">
+        <a href="#top">TOP</a>
+        <a href="terms.html">利用規約</a>
+        <a href="privacy.html">プライバシーポリシー</a>
+        <a href="#contact">お問い合わせ</a>
+        <a href="https://vegework.com/" target="_blank" rel="noopener">vegework ログイン</a>
+      </nav>
+    </div>
+    <p class="ai-credit">このWebサイトは、デザイン・画像生成・コーディングまで、すべてAIを活用して自社で制作しました。<br>vegework の開発にも、AIエージェントをフル活用しています。</p>
+    <p class="copy">© 2026 vegework inc.</p>
+  </div>
+</footer>
+
+<script>
+document.documentElement.classList.add('js');
+// ヒーロー背景スライドショー
+const slides = document.querySelectorAll('.hero-bg img');
+let slideIdx = 0;
+setInterval(() => {
+  slides[slideIdx].classList.remove('active');
+  slideIdx = (slideIdx + 1) % slides.length;
+  slides[slideIdx].classList.add('active');
+}, 6000);
+// リニューアル告知ポップアップ
+const pop = document.getElementById('renewal-pop');
+setTimeout(() => pop.classList.add('show'), 1200);
+document.getElementById('pop-close').addEventListener('click', () => pop.classList.remove('show'));
+// お問い合わせフォーム送信
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxS1hMbuJWwm-0ShzYCUs8BY99HUB5rpEaFunsQifZGSY1bx5phSayqN12s_Yd1UbC8/exec';
+const form = document.getElementById('contact-form');
+form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  if (!form.reportValidity()) return;
+  const btn = document.getElementById('form-submit');
+  const errEl = document.getElementById('form-error');
+  errEl.hidden = true;
+  if (!GAS_URL) {
+    alert('フォームは現在準備中です。恐れ入りますが admin@vegework.com までメールでお問い合わせください。');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: new URLSearchParams(new FormData(form)) });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'error');
+    form.hidden = true;
+    document.getElementById('form-thanks').hidden = false;
+  } catch (e) {
+    errEl.hidden = false;
+    btn.disabled = false;
+    btn.textContent = '資料を受け取る';
+  }
+});
+// ニュースの全件表示切替
+const newsList = document.getElementById('news-list');
+const newsToggle = document.getElementById('news-toggle');
+newsToggle.addEventListener('click', () => {
+  const collapsed = newsList.classList.toggle('collapsed');
+  newsToggle.textContent = collapsed ? '過去のニュースをすべて見る' : '最新のニュースのみ表示する';
+});
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+// フォールバック: 3秒経っても表示されない要素は強制表示
+setTimeout(() => document.querySelectorAll('.reveal:not(.on)').forEach(el => {
+  const r = el.getBoundingClientRect();
+  if (r.top < innerHeight && r.bottom > 0) el.classList.add('on');
+}), 3000);
+</script>
+
+</body>
+</html>
