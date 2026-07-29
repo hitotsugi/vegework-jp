@@ -24,6 +24,7 @@
   --sans: "Noto Sans JP", sans-serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { font-family: var(--sans); color: var(--ink); background: var(--bg); line-height: 1.8; word-break: auto-phrase; }
 .nw { white-space: nowrap; }
@@ -241,8 +242,9 @@ header {
 .form .optin { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
 .form .optin input { width: auto; }
 .form-error { color: #c0392b; font-size: 13px; text-align: center; font-weight: 700; }
-.form-thanks { max-width: 640px; margin: 0 auto; background: #fff; border: 1.5px solid var(--green); border-radius: 12px; padding: 40px 32px; text-align: center; }
-.form-thanks .thanks-title { font-size: 20px; font-weight: 700; color: var(--green-dark); margin-bottom: 12px; }
+.form-thanks { max-width: 640px; margin: 0 auto; background: #fff; border: 1.5px solid var(--green); border-radius: 12px; padding: 28px 24px; text-align: center; }
+.form-thanks .thanks-title { font-size: 16px; font-weight: 700; color: var(--green-dark); margin-bottom: 10px; }
+.form-thanks p { font-size: 14px; }
 button:disabled { opacity: .6; cursor: not-allowed; }
 .auto-note { max-width: 640px; margin: 24px auto 0; background: var(--green-pale); border-radius: 8px; padding: 16px 20px; font-size: 13px; color: var(--green-dark); }
 
@@ -617,8 +619,17 @@ form.addEventListener('submit', async (ev) => {
     const res = await fetch(GAS_URL, { method: 'POST', body: new URLSearchParams(new FormData(form)) });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'error');
+    const thanks = document.getElementById('form-thanks');
     form.hidden = true;
-    document.getElementById('form-thanks').hidden = false;
+    thanks.hidden = false;
+    form.reset();
+    btn.disabled = false;
+    btn.textContent = '資料を受け取る';
+    // 10秒後に完了メッセージを閉じてフォームを元に戻す
+    setTimeout(() => {
+      thanks.hidden = true;
+      form.hidden = false;
+    }, 10000);
   } catch (e) {
     errEl.hidden = false;
     btn.disabled = false;
